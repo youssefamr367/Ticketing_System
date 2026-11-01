@@ -13,5 +13,7 @@ export function CreateApp() {
   //app.use(correlationId);
   app.use("/api", routes);
   //app.use(errorHandler);
+
+  return app;
   return app;
 }
