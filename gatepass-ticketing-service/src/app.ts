@@ -3,6 +3,8 @@ import helmet from "helmet";
 import cors from "cors";
 import CookieParser from "cookie-parser";
 import { routes } from "./routes";
+import { errorHandler } from "./lib/error/ErrorMW";
+import { notFoundHandler } from "./lib/error/NotFoundMW";
 
 export function CreateApp() {
   const app = express();
@@ -12,8 +14,8 @@ export function CreateApp() {
   app.use(CookieParser());
   //app.use(correlationId);
   app.use("/api", routes);
-  //app.use(errorHandler);
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
-  return app;
   return app;
 }

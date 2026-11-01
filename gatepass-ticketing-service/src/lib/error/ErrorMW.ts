@@ -1,30 +1,38 @@
-import { NextFunction, Request, Response } from "express";
+import type { ErrorRequestHandler } from "express";
 import { AppError } from "./appError";
 import { logger } from "../logger/logger";
 
-export function errorHandler(
-  err: AppError,
-  req: Request,
-  res: Response,
-  _next: NextFunction,
-) {
-  const statusCode = err.statusCode;
-  const operational = err.isOperational;
+export const errorHandler: ErrorRequestHandler = (
+  err: unknown,
+  req,
+  res,
+  next,
+) => {
+  if (res.headersSent) {
+    return next(err);
+  }
 
-  logger.error(err.message, {
-    statusCode: err.statusCode,
-    stack: err.stack,
-    operational: operational,
-    body: req.body,
+  const isOperational = err instanceof AppError && err.isOperational;
+  const statusCode = isOperational ? err.statusCode : 500;
+  const message = err instanceof Error ? err.message : "Unknown error";
+
+  logger.error(message, {
+    statusCode,
+    path: req.originalUrl,
+    method: req.method,
+    stack: err instanceof Error ? err.stack : undefined,
   });
 
-  if (operational) {
+  if (isOperational) {
     res.status(statusCode).json({
       status: "error",
       message: err.message,
     });
+    return;
   }
-  return res.status(500).json({
-    error: "Something went wrong",
+
+  res.status(500).json({
+    status: "error",
+    message: "Something went wrong",
   });
-}
+};
