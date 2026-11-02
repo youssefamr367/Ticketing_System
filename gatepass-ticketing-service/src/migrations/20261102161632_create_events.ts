@@ -1,23 +1,24 @@
 import type { Knex } from "knex";
 
-
 export async function up(knex: Knex): Promise<void> {
-   knex.raw(`CREATE TABLE events (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(255) not null,
-        venue_id INT not null,
-        start_time TIMESTAMP,
-        end_time TIMESTAMP constraint Postive check(end_time > start_time) not null,
-        status VARCHAR(50) constraint status_check check(status in ('draft', 'published', 'cancelled')) not null,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  await knex.raw(`
+    CREATE TABLE events (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      venue_id INT NOT NULL,
+      start_time TIMESTAMP NOT NULL,
+      end_time TIMESTAMP NOT NULL,
+      status VARCHAR(50) NOT NULL
+        CONSTRAINT events_status_check CHECK (status IN ('draft', 'published', 'cancelled')),
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT events_time_order_check CHECK (end_time > start_time),
+      CONSTRAINT events_venue_fk FOREIGN KEY (venue_id)
+        REFERENCES venues(id) ON DELETE RESTRICT
     )
-        Constraint fk_venue_id foreign key (venue_id) references venues(id) ON DELETE CASCADE
-    `);
+  `);
 }
-
 
 export async function down(knex: Knex): Promise<void> {
-    knex.raw(`DROP TABLE events`);
+  await knex.raw("DROP TABLE events");
 }
-
