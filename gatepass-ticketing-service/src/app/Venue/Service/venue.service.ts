@@ -5,23 +5,26 @@ import { CreateVenue, GetVenueById, GetVenues } from "../Repo/venue.repo";
 
 export class VenueService {
   CreateVenue = async (data: CreateVenueDTO): Promise<Venue> => {
-    const venue = await CreateVenue(
-      data.neeme,
-      data.city,
-      parseInt(data.capacity),
-    );
-    return venue;
+    return CreateVenue(data.name, data.city, data.capacity);
   };
 
-  GetVenues = async (limit: number, offset: number): Promise<Venue[]> => {
-    const venues = await GetVenues(limit, offset);
-    return venues;
+  GetVenues = async (limit: number, offset: number) => {
+    const { data, total } = await GetVenues(limit, offset);
+    return {
+      data,
+      pagination: {
+        limit,
+        offset,
+        total,
+        has_more: offset + data.length < total,
+      },
+    };
   };
 
-  GetVenueById = async (id: number): Promise<Venue | null> => {
+  GetVenueById = async (id: number): Promise<Venue> => {
     const venue = await GetVenueById(id);
     if (!venue) {
-      throw new AppError(`Venue with ID ${id} not found`, 404);
+      throw new AppError("Venue not found", 404);
     }
     return venue;
   };
