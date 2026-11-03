@@ -15,6 +15,7 @@ export async function up(knex: Knex): Promise<void> {
         REFERENCES venues(id) ON DELETE RESTRICT,
       CONSTRAINT seats_unique_position UNIQUE (venue_id, section, "row", seat_number)
     )
+      Create index idx_seats_venue_id ON seats(venue_id)
   `);
 }
 

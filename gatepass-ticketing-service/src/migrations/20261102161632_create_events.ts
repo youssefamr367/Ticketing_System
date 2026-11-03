@@ -16,6 +16,9 @@ export async function up(knex: Knex): Promise<void> {
       CONSTRAINT events_venue_fk FOREIGN KEY (venue_id)
         REFERENCES venues(id) ON DELETE RESTRICT
     )
+        Create index idx_events_venue_id ON events(venue_id)
+        create index idx_events_start_time ON events(start_time, end_time)
+        
   `);
 }
 
