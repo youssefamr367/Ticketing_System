@@ -1,20 +1,24 @@
-import {plainToInstance} from "class-transformer";
-import {validate} from "class-validator";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 import { AppError } from "../error/appError";
 
+export async function validateBody<T extends object>(
+  cls: new () => T,
+  body: unknown,
+): Promise<T> {
+  if (body === null || typeof body !== "object" || Array.isArray(body)) {
+    throw new AppError("Invalid venue data", 400);
+  }
 
-export async function validateBody <T extends Object>(cls: new () => T, body: unknown) : Promise<T> {
-    // const register = new DTO(body)
-    const instance = plainToInstance(cls, body); // dto: {email, phone, password} , body: {email, phone, system_role}
-    const errors = await validate(instance, {whitelist: true});
+  const instance = plainToInstance(cls, body);
+  const errors = await validate(instance, {
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    forbidUnknownValues: true,
+  });
 
-    if(errors.length > 0) {
-        console.log(errors[0].children)
-        console.log(errors.length)
-
-        const messages = errors.flatMap((e) => Object.values(e.constraints ?? {}));
-        throw new AppError(messages.join('\n'), 400)
-
-    }
-    return instance;
+  if (errors.length > 0) {
+    throw new AppError("Invalid venue data", 400);
+  }
+  return instance;
 }
